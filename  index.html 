@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日快乐贺卡</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            padding: 20px;
+        }
+        
+        /* 飘落的心形装饰 */
+        .hearts {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .heart {
+            position: absolute;
+            top: -20px;
+            animation: fall linear forwards;
+            color: rgba(255, 0, 85, 0.7);
+            font-size: 24px;
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(105vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* 贺卡容器 */
+        .card-container {
+            position: relative;
+            width: 90%;
+            max-width: 500px;
+            height: 70vh;
+            max-height: 600px;
+            perspective: 2000px;
+            z-index: 10;
+            margin: auto;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transform-origin: center;
+            transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            border-radius: 15px;
+        }
+        
+        .card.open {
+            transform: rotateY(180deg);
+        }
+        
+        /* 封面 */
+        .front, .inside {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .front {
+            background: linear-gradient(45deg, #ff758c, #ff7eb3);
+            color: white;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .front h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: appear 0.5s forwards 0.5s;
+        }
+        
+        .front p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: appear 0.5s forwards 0.7s;
+        }
+        
+        .front .hint {
+            position: absolute;
+            bottom: 30px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            transform: translateY(20px);
+            animation: appear 0.5s forwards 0.9s;
+        }
+        
+        /* 内页 - 修复布局 */
+        .inside {
+            background: linear-gradient(to bottom, #fdfcfb, #f7f5f6);
+            transform: rotateY(180deg);
+            color: #5a2a27;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .inside-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
+        
+        .inside h2 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.5rem;
+            color: #e91e63;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .message {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 15px;
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            max-height: 40%; /* 确保文字区域不会太大 */
+            border: 1px solid #f8d7da;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .interactive-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            min-height: 200px; /* 增加互动区域高度 */
+            flex-shrink: 0;
+            margin-top: 15px;
+        }
+        
+        /* 蛋糕区域 */
+        .cake-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            flex-shrink: 0;
+        }
+        
+        .cake {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 110px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .cake:active {
+            transform: translateX(-50%) scale(0.98);
+        }
+        
+        .plate {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .layer {
+            position: absolute;
+            width: 100%;
+            border-radius: 50% 50% 0 0;
+        }
+        
+        .layer-1 {
+            height: 50px;
+            bottom: 30px;
+            background: linear-gradient(to right, #ffb6c1, #ffc0cb);
+        }
+        
+        .layer-2 {
+            height: 35px;
+            bottom: 65px;
+            background: linear-gradient(to right, #f8b7d4, #ffcce7);
+            width: 85%;
+            left: 7.5%;
+        }
+        
+        .layer-3 {
+            height: 25px;
+            bottom: 90px;
+            background: linear-gradient(to right, #f9a7b0, #fec8d8);
+            width: 70%;
+            left: 15%;
+        }
+        
+        .candle {
+            position: absolute;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 5px;
+            height: 25px;
+            background: linear-gradient(to bottom, #4CAF50, #81C784);
+            border-radius: 2px;
+            z-index: 10;
+        }
+        
+        .flame {
+            position: absolute;
+            bottom: 135px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 15px;
+            background: linear-gradient(to bottom, #FF9800, #FF5722);
+            border-radius: 50% 50% 20% 20%;
+            animation: flicker 1.5s infinite alternate;
+            box-shadow: 0 0 10px #FF9800;
+        }
+        
+        .flame.out {
+            animation: none;
+            opacity: 0;
+        }
+        
+        .smoke {
+            position: absolute;
+            bottom: 135px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            opacity: 0;
+        }
+        
+        .smoke.animate {
+            animation: smoke 2s forwards;
+        }
+        
+        /* 气球区域 */
+        .balloons {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            position: relative;
+        }
+        
+        .balloon {
+            width: 40px;
+            height: 50px;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .balloon::before {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: #fff;
+        }
+        
+        .balloon:hover {
+            transform: translateY(-5px);
+        }
+        
+        .balloon:nth-child(1) {
+            background: radial-gradient(circle at 30% 30%, #ff7676, #d63031);
+        }
+        
+        .balloon:nth-child(2) {
+            background: radial-gradient(circle at 30% 30%, #74b9ff, #0984e3);
+        }
+        
+        .balloon:nth-child(3) {
+            background: radial-gradient(circle at 30% 30%, #55efc4, #00b894);
+        }
+
+        .balloon.flying {
+            animation: flyAway 2s forwards;
+        }
+
+        @keyframes flyAway {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-800px) translateX(calc(20px - 40px * var(--x-offset)));
+                opacity: 0;
+            }
+        }
+        
+        /* 签名 */
+        .signature {
+            text-align: right;
+            font-style: italic;
+            font-weight: bold;
+            color: #e91e63;
+            margin-top: 10px;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        /* 动画效果 */
+        @keyframes appear {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes flicker {
+            0%, 100% { height: 15px; }
+            50% { height: 20px; }
+        }
+        
+     
